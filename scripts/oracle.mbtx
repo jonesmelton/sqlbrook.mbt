@@ -1,0 +1,91 @@
+// Differential test against the reference OCaml binary.
+//
+//   moon run scripts/oracle.mbtx -- <ocaml-bin> [input...]
+//
+// Each input is a `.sql` file, a `.jsonl` file with one JSON string of SQL
+// per line, or `--fuzz` for the 9000 generated cases printed by the skipped
+// test in `fuzz_cases_test.mbt`. With no inputs, every
+// `internal/corpus/*.sql` is used. Each input
+// goes through both the oracle and the wasm CLI on stdin; stdout, stderr and
+// the exit status must all match. Run from the module root.
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+async fn run_on(
+  program : String,
+  args : Array[String],
+  input : String,
+) -> (Int, String, String) {
+  let out = @shell.Cmd(program, args, stdin=Text(input)).output()
+  (out.exit_code(), out.stdout(), out.stderr())
+}
+
+fn json_lines(name : String, text : String) -> Array[(String, String)] raise {
+  let cases = []
+  for i, line in text.split("\n").collect() {
+    guard line is ['"', ..] else { continue }
+    guard @json.parse(line) is String(sql) else {
+      fail("\{name}:\{i + 1}: not a JSON string")
+    }
+    cases.push(("\{name}:\{i + 1}", sql))
+  }
+  cases
+}
+
+async fn cases_of(input : String) -> Array[(String, String)] {
+  if input == "--fuzz" {
+    let out = @shell.Cmd("moon", [
+      "test", "fuzz_cases_test.mbt", "--include-skipped",
+    ]).output(max_output_bytes=64 * 1024 * 1024)
+    out.check()
+    return json_lines("fuzz", out.stdout())
+  }
+  let text = @fs.read_file(input).text()
+  if input.has_suffix(".jsonl") {
+    json_lines(input, text)
+  } else {
+    [(input, text)]
+  }
+}
+
+async fn main {
+  let args = @env.args()
+  guard args.get(1) is Some(oracle) else {
+    fail("usage: moon run scripts/oracle.mbtx -- <ocaml-bin> [input...]")
+  }
+  let inputs = if args.length() > 2 {
+    args[2:].to_owned()
+  } else {
+    @shell.glob("internal/corpus/*.sql")
+  }
+  @shell.Cmd("moon", ["build", "--target", "wasm"]).run()
+  let wasm = "_build/wasm/debug/build/cmd/sqlbrook/sqlbrook.wasm"
+  let mut total = 0
+  let mut failed = 0
+  for input in inputs {
+    for case in cases_of(input) {
+      let (name, sql) = case
+      total += 1
+      let want = run_on(oracle, [], sql)
+      let got = run_on("moonrun", [wasm, "--"], sql)
+      if want == got {
+        continue
+      }
+      failed += 1
+      println("FAIL \{name}")
+      println("  input:  \{sql.escape()}")
+      println("  oracle: exit \{want.0} \{want.1.escape()} \{want.2.escape()}")
+      println("  wasm:   exit \{got.0} \{got.1.escape()} \{got.2.escape()}")
+    }
+  }
+  println("\{total - failed}/\{total} match the oracle")
+  if failed > 0 {
+    fail("\{failed} mismatches")
+  }
+}

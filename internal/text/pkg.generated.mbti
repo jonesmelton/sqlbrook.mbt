@@ -1,0 +1,15 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jonesmelton/sqlbrook/internal/text"
+
+// Values
+pub fn ascii_lowercase(StringView) -> String
+
+pub fn utf8_width(StringView) -> Int32
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jonesmelton/sqlbrook"
+
+import {
+  "jonesmelton/sqlbrook/lexer",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn format(String) -> Formatted raise @lexer.LexError
+
+pub fn tokenize(String) -> Array[@lexer.Token] raise @lexer.LexError
+
+// Errors
+
+// Types and methods
+pub struct Formatted {
+  output : String
+  skips : Array[Skip]
+} derive(@debug.Debug)
+pub fn Formatted::had_passthrough(Self) -> Bool
+pub fn Formatted::to_repr(Self) -> @debug.Repr
+
+pub struct Skip {
+  kind : String
+  line : Int32
+} derive(Eq, @debug.Debug)
+pub fn Skip::equal(Self, Self) -> Bool
+pub fn Skip::not_equal(Self, Self) -> Bool
+pub fn Skip::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+pub using @lexer {type LexError}
+
+pub using @lexer {type Token}
+
+// Traits

@@ -1,0 +1,24 @@
+// Copies the reference implementation's golden examples into the corpus.
+//
+//   moon run scripts/sync_corpus.mbtx -- <path/to/ocaml/sqlbrook>
+//
+// Run from the module root. A new file also needs an embed rule in
+// `internal/corpus/moon.pkg` and an entry in `internal/corpus/corpus.mbt`.
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+}
+
+async fn main {
+  guard @env.args().get(1) is Some(repo) else {
+    fail("usage: moon run scripts/sync_corpus.mbtx -- <path/to/ocaml/sqlbrook>")
+  }
+  for path in @shell.glob("\{repo}/examples/*.sql") {
+    let name = path.split("/").last().unwrap_or(path)
+    @fs.write_file("internal/corpus/\{name}", @fs.read_file(path).text())
+    println("synced \{name}")
+  }
+}

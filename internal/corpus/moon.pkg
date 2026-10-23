@@ -1,0 +1,71 @@
+rule(
+  name: "embed-bugshield",
+  command: ":embed --text --name bugshield -i $input -o $output",
+)
+
+dev_build(
+  rule: "embed-bugshield",
+  input: "bugshield.sql",
+  output: "bugshield_generated.mbt",
+)
+
+rule(
+  name: "embed-char",
+  command: ":embed --text --name char -i $input -o $output",
+)
+
+dev_build(rule: "embed-char", input: "char.sql", output: "char_generated.mbt")
+
+rule(
+  name: "embed-init",
+  command: ":embed --text --name init -i $input -o $output",
+)
+
+dev_build(rule: "embed-init", input: "init.sql", output: "init_generated.mbt")
+
+rule(
+  name: "embed-items",
+  command: ":embed --text --name items -i $input -o $output",
+)
+
+dev_build(
+  rule: "embed-items",
+  input: "items.sql",
+  output: "items_generated.mbt",
+)
+
+rule(
+  name: "embed-lore",
+  command: ":embed --text --name lore -i $input -o $output",
+)
+
+dev_build(rule: "embed-lore", input: "lore.sql", output: "lore_generated.mbt")
+
+rule(
+  name: "embed-map",
+  command: ":embed --text --name map -i $input -o $output",
+)
+
+dev_build(rule: "embed-map", input: "map.sql", output: "map_generated.mbt")
+
+rule(
+  name: "embed-session",
+  command: ":embed --text --name session -i $input -o $output",
+)
+
+dev_build(
+  rule: "embed-session",
+  input: "session.sql",
+  output: "session_generated.mbt",
+)
+
+rule(
+  name: "embed-vitals",
+  command: ":embed --text --name vitals -i $input -o $output",
+)
+
+dev_build(
+  rule: "embed-vitals",
+  input: "vitals.sql",
+  output: "vitals_generated.mbt",
+)

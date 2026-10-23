@@ -1,0 +1,70 @@
+// Runs the stdin CLI contract with moon-cram.
+//
+//   moon run scripts/cli_test.mbtx                 # the wasm CLI: cli.t and cli-wasm.t
+//   moon run scripts/cli_test.mbtx -- <ocaml-bin>  # the OCaml binary: cli.t only
+//
+// Run from the module root. The tests call `sqlbrook` from PATH, so this puts
+// a temporary directory holding a `sqlbrook` shim (or a symlink to the OCaml
+// binary) at the front of PATH.
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+}
+
+async fn module_version() -> String {
+  for line in @fs.read_file("moon.mod").text().split("\n") {
+    if line.strip_prefix("version = \"") is Some(rest) &&
+      rest.strip_suffix("\"") is Some(version) {
+      return version.to_owned()
+    }
+  }
+  fail("no version in moon.mod")
+}
+
+async fn main {
+  let root = @fs.realpath(".")
+  let oracle = @env.args().get(1)
+  let tmp = @fs.tmpdir(prefix="sqlbrook-cli-")
+  defer @async.protect_from_cancel(() => @fs.rmdir(tmp, recursive=true))
+  let tests = match oracle {
+    Some(oracle) => {
+      @fs.symlink(target=@fs.realpath(oracle), "\{tmp}/sqlbrook")
+      ["\{root}/cmd/sqlbrook/cli.t"]
+    }
+    None => {
+      @shell.Cmd("moon", ["build", "--target", "wasm"]).run()
+      let wasm = "\{root}/_build/wasm/debug/build/cmd/sqlbrook/sqlbrook.wasm"
+      @fs.write_file(
+        "\{tmp}/sqlbrook",
+        "#!/bin/sh\nexec moonrun \"\{wasm}\" -- \"$@\"\n",
+        permission=0o755,
+      )
+      // moon-cram writes its output next to the test file, so run copies.
+      let version = module_version()
+      let wasm_cases = @fs.read_file("\{root}/cmd/sqlbrook/cli-wasm.t").text()
+      @fs.write_file(
+        "\{tmp}/cli-wasm.t",
+        wasm_cases.replace_all(old="@VERSION@", new=version),
+      )
+      @fs.write_file(
+        "\{tmp}/cli.t",
+        @fs.read_file("\{root}/cmd/sqlbrook/cli.t").text(),
+      )
+      ["\{tmp}/cli.t", "\{tmp}/cli-wasm.t"]
+    }
+  }
+  let path = @env.get_env_var("PATH").unwrap_or("")
+  let status = @shell.Cmd(
+    "moon-cram",
+    ["test", "--cram-compat", ..tests],
+    env={ "PATH": "\{tmp}:\{path}" },
+    stdout=Inherit,
+    stderr=Inherit,
+  ).status()
+  if status != 0 {
+    fail("moon-cram exited with status \{status}")
+  }
+}

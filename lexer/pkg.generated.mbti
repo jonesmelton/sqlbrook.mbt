@@ -1,0 +1,55 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jonesmelton/sqlbrook/lexer"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn lex(String) -> Array[Spanned] raise LexError
+
+pub fn tokenize(String) -> Array[Token] raise LexError
+
+// Errors
+pub suberror LexError {
+  UnexpectedByte(Byte, offset~ : Int32)
+  PostgresCast(offset~ : Int32)
+  PostgresDollarQuote(offset~ : Int32)
+}
+pub fn LexError::output(Self, &Logger) -> Unit
+pub fn LexError::to_string(Self) -> String
+pub impl Show for LexError
+
+// Types and methods
+pub struct Spanned {
+  token : Token
+  start : Int32
+  end : Int32
+} derive(Eq, @debug.Debug)
+pub fn Spanned::equal(Self, Self) -> Bool
+pub fn Spanned::not_equal(Self, Self) -> Bool
+pub fn Spanned::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Token {
+  Keyword(String)
+  Ident(String)
+  Quoted(String)
+  Number(String)
+  Operator(String)
+  Placeholder(String)
+  LParen
+  RParen
+  Comma
+  Semicolon
+  Comment(String)
+} derive(Eq, @debug.Debug)
+pub fn Token::equal(Self, Self) -> Bool
+pub fn Token::not_equal(Self, Self) -> Bool
+pub fn Token::output(Self, &Logger) -> Unit
+pub fn Token::to_repr(Self) -> @debug.Repr
+pub fn Token::to_string(Self) -> String
+pub impl Show for Token
+
+// Type aliases
+
+// Traits

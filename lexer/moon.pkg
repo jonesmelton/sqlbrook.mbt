@@ -1,0 +1,10 @@
+import {
+  "jonesmelton/sqlbrook/internal/text",
+  "moonbitlang/core/debug",
+}
+
+import {
+  "jonesmelton/sqlbrook/internal/text",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/quickcheck",
+} for "test"

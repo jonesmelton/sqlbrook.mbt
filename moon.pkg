@@ -1,0 +1,11 @@
+import {
+  "jonesmelton/sqlbrook/internal/layout",
+  "jonesmelton/sqlbrook/internal/syntax",
+  "jonesmelton/sqlbrook/lexer",
+  "moonbitlang/core/debug",
+}
+
+import {
+  "jonesmelton/sqlbrook/internal/corpus",
+  "moonbitlang/core/quickcheck",
+} for "test"

@@ -1,0 +1,13 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jonesmelton/sqlbrook/internal/corpus"
+
+// Values
+pub fn all() -> Array[(String, String)]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

@@ -1,0 +1,79 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jonesmelton/sqlbrook/internal/syntax"
+
+import {
+  "jonesmelton/sqlbrook/lexer",
+}
+
+// Values
+pub fn parse(String, Array[@lexer.Spanned]) -> Array[Parsed]
+
+// Errors
+
+// Types and methods
+pub struct Assign {
+  lhs : Array[@lexer.Token]
+  rhs : Array[@lexer.Token]
+}
+
+pub struct Clause {
+  kw : String
+  items : Array[Item]
+}
+
+pub struct Conflict {
+  target : Array[Item]?
+  assigns : Array[Assign]
+}
+
+pub struct DdlItem {
+  lead : @lexer.Token
+  head_rest : Array[@lexer.Token]
+  segments : Array[Array[@lexer.Token]]
+}
+
+pub struct Insert {
+  verb : String
+  table : Array[@lexer.Token]
+  cols : Array[Item]?
+  source : Source
+  conflict : Conflict?
+  returning : Array[@lexer.Token]
+  semi : Bool
+}
+
+pub struct Item {
+  expr : ItemBody
+  as_name : String?
+}
+
+pub enum ItemBody {
+  Blob(Array[@lexer.Token])
+  Sub(Stmt)
+}
+
+pub struct Parsed {
+  comments : Array[String]
+  stmt : Stmt
+}
+
+pub enum Source {
+  Values(Array[Item])
+  Select(Stmt)
+}
+
+pub enum Stmt {
+  Dml(clauses~ : Array[Clause], semi~ : Bool)
+  Insert(Insert)
+  CreateTable(header~ : Array[@lexer.Token], name~ : Array[@lexer.Token], defs~ : Array[DdlItem], without_rowid~ : Bool, semi~ : Bool)
+  CreateView(header~ : Array[@lexer.Token], body~ : Stmt)
+  CreateIndex(verb~ : String, name~ : Array[@lexer.Token], table~ : Array[@lexer.Token], predicate~ : Array[@lexer.Token], semi~ : Bool)
+  CreateVirtualTable(verb~ : String, name~ : Array[@lexer.Token], module_args~ : Array[@lexer.Token], semi~ : Bool)
+  Cte(recursive~ : Bool, name~ : String, cols~ : Array[Item], body~ : Stmt, outer~ : Stmt)
+  Setop(op~ : String, arms~ : Array[Stmt], semi~ : Bool)
+  Passthrough(source~ : String, kind~ : String, offset~ : Int32)
+}
+
+// Type aliases
+
+// Traits

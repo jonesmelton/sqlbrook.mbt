@@ -1,0 +1,6 @@
+_build/
+.mooncakes/
+.repos/
+.honkmoon/
+.DS_Store
+.claude/

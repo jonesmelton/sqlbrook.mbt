@@ -1,0 +1,8 @@
+# Replaces .gitignore when packaging for mooncakes.io; check the result with
+# `moon package --list`.
+
+# Build output, including the per-script _build/ that `moon run scripts/*.mbtx`
+# creates. The root _build/ is always excluded.
+_build/
+.repos/
+.DS_Store
